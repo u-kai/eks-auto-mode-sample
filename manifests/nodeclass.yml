@@ -1,0 +1,23 @@
+apiVersion: eks.amazonaws.com/v1
+kind: NodeClass
+metadata:
+  name: schedule-private
+spec:
+  role: eks-sample-node-role
+
+  subnetSelectorTerms:
+    - tags:
+        Private: "1"
+  securityGroupSelectorTerms:
+    - tags:
+        Name: "for-eks-worker-nodes"
+  snatPolicy: Random
+
+  networkPolicy: DefaultAllow
+
+  networkPolicyEventLogs: Disabled
+
+  ephemeralStorage:
+    size: "18Gi"
+    iops: 3000
+    throughput: 125

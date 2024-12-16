@@ -1,0 +1,28 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: schedule-private
+spec:
+  template:
+    metadata:
+      labels:
+        provisioner: private
+    spec:
+      nodeClassRef:
+        group: eks.amazonaws.com
+        kind: NodeClass
+        name: schedule-private
+
+      requirements:
+        - key: "deployNodeClass"
+          operator: In
+          values: ["default"]
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ["amd64", "arm64"]
+
+  disruption:
+    consolidateAfter: 30s
+  limits:
+    cpu: "4"
+    memory: 4Gi
