@@ -52,7 +52,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [test-pod-identity]
+        service: [sample-pod-identity]
 
     steps:
       - name: Checkout code
