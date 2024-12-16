@@ -42,8 +42,8 @@ resource "aws_iam_role" "pod_identity_sample" {
 }
 
 resource "aws_iam_role_policy_attachment" "pod_identity_sample" {
-  policy_arn = aws_iam_policy.pod_identity.arn
-  role       = aws_iam_role.pod_identity.name
+  policy_arn = aws_iam_policy.pod_identity_sample.arn
+  role       = aws_iam_role.pod_identity_sample.name
 }
 
 resource "aws_iam_policy" "pod_identity_sample" {
