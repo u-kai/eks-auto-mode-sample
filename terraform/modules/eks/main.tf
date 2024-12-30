@@ -62,7 +62,7 @@ resource "aws_iam_role" "node" {
 
 
 data "aws_security_group" "eks_cluster" {
-  id = aws_eks_cluster.main.vpc_config.cluster_security_group_id
+  id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "eks_cluster" {
