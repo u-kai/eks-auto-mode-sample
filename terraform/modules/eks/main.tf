@@ -162,3 +162,86 @@ data "aws_iam_policy_document" "cluster_admin" {
     resources = ["*"]
   }
 }
+
+// vpc lattice controllerのIAMロールを作成
+resource "aws_eks_pod_identity_association" "vpc_lattice_controller" {
+  cluster_name    = var.cluster_name
+  namespace       = "aws-application-networking-system"
+  service_account = "gateway-api-controller"
+  role_arn        = aws_iam_role.vpc_lattice_controller.arn
+}
+
+resource "aws_iam_role" "vpc_lattice_controller" {
+  name = "VPCLatticeControllerIAMRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["sts:AssumeRole", "sts:TagSession"]
+        Effect = "Allow"
+        Principal = {
+          AWS = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "vpc_lattice_controller" {
+  policy_arn = aws_iam_policy.vpc_lattice_controller.arn
+  role       = aws_iam_role.vpc_lattice_controller.name
+}
+
+resource "aws_iam_policy" "vpc_lattice_controller" {
+  name        = "VPCLatticeControllerIAMPolicy"
+  description = "IAM policy for VPCLatticeController"
+  policy = jsondecode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "vpc-lattice:*",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeTags",
+          "ec2:DescribeSecurityGroups",
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:DescribeLogGroups",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "tag:GetResources",
+          "firehose:TagDeliveryStream",
+          "s3:GetBucketPolicy",
+          "s3:PutBucketPolicy",
+        ],
+        Resource = "*",
+      },
+      {
+        Effect   = "Allow",
+        Action   = "iam:CreateServiceLinkedRole",
+        Resource = "arn:aws:iam::*:role/aws-service-role/vpc-lattice.amazonaws.com/AWSServiceRoleForVpcLattice",
+        Condition = {
+          StringLike = {
+            "iam:AWSServiceName" = "vpc-lattice.amazonaws.com"
+          }
+        }
+      },
+      {
+        Effect   = "Allow",
+        Action   = "iam:CreateServiceLinkedRole",
+        Resource = "arn:aws:iam::*:role/aws-service-role/delivery.logs.amazonaws.com/AWSServiceRoleForLogDelivery",
+        Condition = {
+          StringLike = {
+            "iam:AWSServiceName" = "delivery.logs.amazonaws.com"
+          }
+        }
+      },
+    ],
+  })
+}
+
