@@ -180,7 +180,7 @@ resource "aws_iam_role" "vpc_lattice_controller" {
         Action = ["sts:AssumeRole", "sts:TagSession"]
         Effect = "Allow"
         Principal = {
-          AWS = "pods.eks.amazonaws.com"
+          Service = "pods.eks.amazonaws.com"
         }
       },
     ]
