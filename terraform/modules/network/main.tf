@@ -148,6 +148,12 @@ resource "aws_vpc_security_group_ingress_rule" "eks_cluster_vpc_lattice" {
   prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice.id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "eks_cluster_vpc_lattice_ipv6" {
+  security_group_id = aws_security_group.eks_cluster.id
+  ip_protocol       = "-1"
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice_ipv6.id
+}
+
 // worker node用のsecurity groupを作成
 // NodeClassで指定可能
 resource "aws_security_group" "worker_nodes" {
@@ -175,9 +181,18 @@ resource "aws_vpc_security_group_ingress_rule" "worker_nodes_vpc_lattice" {
   prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice.id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "worker_nodes_vpc_lattice_ipv6" {
+  security_group_id = aws_security_group.worker_nodes.id
+  ip_protocol       = "-1"
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice_ipv6.id
+}
 
 data "aws_ec2_managed_prefix_list" "vpc_lattice" {
   name = "com.amazonaws.${data.aws_region.current.name}.vpc-lattice"
+}
+
+data "aws_ec2_managed_prefix_list" "vpc_lattice_ipv6" {
+  name = "com.amazonaws.${data.aws_region.current.name}.ipv6.vpc-lattice"
 }
 
 data "aws_region" "current" {}
