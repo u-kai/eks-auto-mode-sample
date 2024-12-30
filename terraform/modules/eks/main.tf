@@ -195,7 +195,7 @@ resource "aws_iam_role_policy_attachment" "vpc_lattice_controller" {
 resource "aws_iam_policy" "vpc_lattice_controller" {
   name        = "VPCLatticeControllerIAMPolicy"
   description = "IAM policy for VPCLatticeController"
-  policy = jsondecode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
