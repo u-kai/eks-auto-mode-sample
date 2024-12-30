@@ -9,12 +9,34 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 func main() {
 	http.HandleFunc("/", handlerFunc)
 	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("old", oldHandlerFunc)
 
+}
+
+func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
+	sess, err := session.NewSession()
+	if err != nil {
+		panic("session error, " + err.Error())
+	}
+	svc := ec2metadata.New(sess)
+	mac, err := svc.GetMetadata("mac")
+	if err != nil {
+		return "", err
+	}
+	vpcID, err := svc.GetMetadata(fmt.Sprintf("network/interfaces/macs/%s/vpc-id", mac))
+	if err != nil {
+		return "", err
+	}
+	res.Header().Set("Content-Type", "text/plain")
+	res.WriteHeader(http.StatusOK)
+	io.WriteString(res, vpcID)
 }
 
 func handlerFunc(res http.ResponseWriter, req *http.Request) {
