@@ -27,6 +27,8 @@ func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 		io.WriteString(res, "session error"+err.Error())
 		return
 	}
+	fmt.Println("session created")
+	fmt.Printf("%+v\n", sess)
 	svc := ec2metadata.New(sess)
 	mac, err := svc.GetMetadata("mac")
 	if err != nil {
