@@ -20,7 +20,8 @@ module "network" {
   source = "./modules/network"
 }
 module "eks_cluster" {
-  source     = "./modules/eks"
-  subnet_ids = module.network.cluster_subnet_ids
+  source                    = "./modules/eks"
+  subnet_ids                = module.network.cluster_subnet_ids
+  cluster_security_group_id = module.network.cluster_security_group_id
 }
 

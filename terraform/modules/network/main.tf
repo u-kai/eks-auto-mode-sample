@@ -123,6 +123,31 @@ resource "aws_nat_gateway" "main" {
   depends_on = [aws_internet_gateway.main]
 }
 
+resource "aws_security_group" "eks_cluster" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "for-eks-cluster"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "eks_cluster" {
+  security_group_id = aws_security_group.eks_cluster.id
+  cidr_ipv4         = aws_vpc.main.cidr_block
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_egress_rule" "eks_cluster" {
+  security_group_id = aws_security_group.eks_cluster.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "eks_cluster_vpc_lattice" {
+  security_group_id = aws_security_group.eks_cluster.id
+  ip_protocol       = "-1"
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice.id
+}
+
 // worker node用のsecurity groupを作成
 // NodeClassで指定可能
 resource "aws_security_group" "worker_nodes" {
@@ -144,3 +169,15 @@ resource "aws_vpc_security_group_egress_rule" "worker_nodes" {
   ip_protocol       = "-1"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "worker_nodes_vpc_lattice" {
+  security_group_id = aws_security_group.worker_nodes.id
+  ip_protocol       = "-1"
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.vpc_lattice.id
+}
+
+
+data "aws_ec2_managed_prefix_list" "vpc_lattice" {
+  name = "com.amazonaws.${data.aws_region.current.name}.vpc-lattice"
+}
+
+data "aws_region" "current" {}
