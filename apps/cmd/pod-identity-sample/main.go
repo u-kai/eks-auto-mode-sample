@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	v2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go/aws"
@@ -42,6 +43,9 @@ func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		log.Printf("Error: %v", err)
 	}
 	log.Printf("Response: %v", resp)
+	if resp == nil {
+		return resp, err
+	}
 	body = make([]byte, resp.ContentLength)
 	if resp.Body == nil {
 		log.Printf("Response Body: nil")
@@ -68,7 +72,9 @@ func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 	fmt.Println("session created")
 	fmt.Printf("%+v\n", sess)
 	svc := ec2metadata.New(sess)
+	fmt.Println("svc created")
 	mac, err := svc.GetMetadata("mac")
+	fmt.Println("mac created")
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(res, "mac error"+err.Error())
@@ -87,7 +93,7 @@ func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 
 func handlerFunc(res http.ResponseWriter, req *http.Request) {
 	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithClientLogMode(v2.LogRequestWithBody|v2.LogResponseWithBody))
 	if err != nil {
 		panic("configuration error, " + err.Error())
 	}
