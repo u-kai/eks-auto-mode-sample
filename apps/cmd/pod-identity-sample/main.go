@@ -15,24 +15,30 @@ import (
 
 func main() {
 	http.HandleFunc("/", handlerFunc)
+	http.HandleFunc("/old", oldHandlerFunc)
 	http.ListenAndServe(":8080", nil)
-	http.HandleFunc("old", oldHandlerFunc)
 
 }
 
 func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 	sess, err := session.NewSession()
 	if err != nil {
-		panic("session error, " + err.Error())
+		res.WriteHeader(http.StatusInternalServerError)
+		io.WriteString(res, "session error")
+		return
 	}
 	svc := ec2metadata.New(sess)
 	mac, err := svc.GetMetadata("mac")
 	if err != nil {
-		panic("mac error, " + err.Error())
+		res.WriteHeader(http.StatusInternalServerError)
+		io.WriteString(res, "mac error")
+		return
 	}
 	vpcID, err := svc.GetMetadata(fmt.Sprintf("network/interfaces/macs/%s/vpc-id", mac))
 	if err != nil {
-		panic("vpc error, " + err.Error())
+		res.WriteHeader(http.StatusInternalServerError)
+		io.WriteString(res, "vpc-id error")
+		return
 	}
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusOK)
