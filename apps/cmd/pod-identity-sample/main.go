@@ -28,11 +28,11 @@ func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 	svc := ec2metadata.New(sess)
 	mac, err := svc.GetMetadata("mac")
 	if err != nil {
-		return "", err
+		panic("mac error, " + err.Error())
 	}
 	vpcID, err := svc.GetMetadata(fmt.Sprintf("network/interfaces/macs/%s/vpc-id", mac))
 	if err != nil {
-		return "", err
+		panic("vpc error, " + err.Error())
 	}
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusOK)
