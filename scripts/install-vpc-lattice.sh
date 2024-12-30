@@ -10,6 +10,6 @@ helm install gateway-api-controller \
     --version=v1.1.0 \
     --set=serviceAccount.create=false \
     --namespace aws-application-networking-system \
-    --set=log.level=info # use "debug" for debug level logs
+    --set=log.level=debug # use "debug" for debug level logs
 
 kubectl apply -f https://raw.githubusercontent.com/aws/aws-application-networking-k8s/main/files/controller-installation/gatewayclass.yaml
