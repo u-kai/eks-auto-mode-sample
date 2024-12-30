@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -21,10 +22,36 @@ func main() {
 
 }
 
+type loggingTransport struct {
+	transport http.RoundTripper
+}
+
+func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	log.Printf("Request: %v", req)
+	body := make([]byte, req.ContentLength)
+	req.Body.Read(body)
+	defer req.Body.Close()
+
+	log.Printf("Request Body: %s", string(body))
+	log.Printf("Request Header: %v", req.Header)
+	resp, err := t.transport.RoundTrip(req)
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
+	log.Printf("Response: %v", resp)
+	body = make([]byte, resp.ContentLength)
+	resp.Body.Read(body)
+	defer resp.Body.Close()
+	log.Printf("Response Body: %s", string(body))
+	log.Printf("Response Header: %v", resp.Header)
+	return resp, err
+}
+
 func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 	sess, err := session.NewSession(&aws.Config{
-		LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody), // リクエスト/レスポンスをログ出力
-		Logger:   aws.NewDefaultLogger(),
+		LogLevel:   aws.LogLevel(aws.LogDebugWithHTTPBody), // リクエスト/レスポンスをログ出力
+		Logger:     aws.NewDefaultLogger(),
+		HTTPClient: &http.Client{Transport: &loggingTransport{http.DefaultTransport}},
 	})
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
