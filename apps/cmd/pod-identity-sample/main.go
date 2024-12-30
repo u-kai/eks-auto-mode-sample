@@ -24,20 +24,20 @@ func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
 	sess, err := session.NewSession()
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		io.WriteString(res, "session error")
+		io.WriteString(res, "session error"+err.Error())
 		return
 	}
 	svc := ec2metadata.New(sess)
 	mac, err := svc.GetMetadata("mac")
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		io.WriteString(res, "mac error")
+		io.WriteString(res, "mac error"+err.Error())
 		return
 	}
 	vpcID, err := svc.GetMetadata(fmt.Sprintf("network/interfaces/macs/%s/vpc-id", mac))
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		io.WriteString(res, "vpc-id error")
+		io.WriteString(res, "vpc-id error"+err.Error())
 		return
 	}
 	res.Header().Set("Content-Type", "text/plain")
