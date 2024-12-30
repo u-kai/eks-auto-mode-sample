@@ -29,10 +29,13 @@ type loggingTransport struct {
 func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	log.Printf("Request: %v", req)
 	body := make([]byte, req.ContentLength)
-	req.Body.Read(body)
-	defer req.Body.Close()
-
-	log.Printf("Request Body: %s", string(body))
+	if req.Body == nil {
+		log.Printf("Request Body: nil")
+	} else {
+		req.Body.Read(body)
+		defer req.Body.Close()
+		log.Printf("Request Body: %s", string(body))
+	}
 	log.Printf("Request Header: %v", req.Header)
 	resp, err := t.transport.RoundTrip(req)
 	if err != nil {
@@ -40,9 +43,13 @@ func (t *loggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 	log.Printf("Response: %v", resp)
 	body = make([]byte, resp.ContentLength)
-	resp.Body.Read(body)
-	defer resp.Body.Close()
-	log.Printf("Response Body: %s", string(body))
+	if resp.Body == nil {
+		log.Printf("Response Body: nil")
+	} else {
+		resp.Body.Read(body)
+		defer resp.Body.Close()
+		log.Printf("Response Body: %s", string(body))
+	}
 	log.Printf("Response Header: %v", resp.Header)
 	return resp, err
 }
