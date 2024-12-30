@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -21,7 +23,10 @@ func main() {
 }
 
 func oldHandlerFunc(res http.ResponseWriter, req *http.Request) {
-	sess, err := session.NewSession()
+	sess, err := session.NewSession(&aws.Config{
+		LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody), // リクエスト/レスポンスをログ出力
+		Logger:   aws.NewDefaultLogger(),
+	})
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(res, "session error"+err.Error())
