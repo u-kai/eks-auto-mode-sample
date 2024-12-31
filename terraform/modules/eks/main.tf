@@ -192,7 +192,7 @@ data "aws_iam_policy_document" "cluster_admin" {
 
 // vpc lattice controllerのIAMロールを作成
 resource "aws_eks_pod_identity_association" "vpc_lattice_controller" {
-  cluster_name    = var.cluster_name
+  cluster_name    = aws_eks_cluster.main.name
   namespace       = "aws-application-networking-system"
   service_account = "gateway-api-controller"
   role_arn        = aws_iam_role.vpc_lattice_controller.arn
