@@ -229,6 +229,7 @@ resource "aws_iam_policy" "vpc_lattice_controller" {
         Effect = "Allow",
         Action = [
           "vpc-lattice:*",
+          "eks:DescribeCluster",
           "ec2:DescribeVpcs",
           "ec2:DescribeSubnets",
           "ec2:DescribeTags",
